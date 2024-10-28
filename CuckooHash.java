@@ -256,7 +256,20 @@ public class CuckooHash<K, V> {
         // Also make sure you read this method's prologue above, it should help
         // you. Especially the two HINTS in the prologue.
 
-        return;
+    }
+
+    /**
+     * Method swapHashes
+     *
+     * Swaps hash1 position to hash2 and hash2 position to hash1
+     *
+     * @param pos
+     * @param count
+     */
+    private void swapHashes(int pos, int count) {
+        if (table[pos] == null) {
+            return;
+        }
     }
 
     /**
