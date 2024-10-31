@@ -251,25 +251,46 @@ public class CuckooHash<K, V> {
      */
 
     public void put(K key, V value) {
-
-        // ADD YOUR CODE HERE - DO NOT FORGET TO ADD YOUR NAME AT TOP OF FILE.
-        // Also make sure you read this method's prologue above, it should help
-        // you. Especially the two HINTS in the prologue.
-
-    }
-
-    /**
-     * Method swapHashes
-     *
-     * Swaps hash1 position to hash2 and hash2 position to hash1
-     *
-     * @param pos
-     * @param count
-     */
-    private void swapHashes(int pos, int count) {
-        if (table[pos] == null) {
+        if (table[hash1(key)] != null &&
+                table[hash1(key)].getBucKey() == key &&
+                table[hash1(key)].getValue() == value) {
             return;
         }
+        if (table[hash2(key)] != null &&
+                table[hash2(key)].getBucKey() == key &&
+                table[hash2(key)].getValue() == value) {
+            return;
+        }
+
+        for (int i = 0; i < CAPACITY; i++) {
+            int pos1 = hash1(key);
+            // If we ever encounter a null bucket our shuffle is finished
+            if (table[pos1] == null) {
+                table[pos1] = new Bucket<K, V>(key, value);
+                return;
+            }
+            // Swapping out buckets
+            K prevKey = table[pos1].getBucKey();
+            V prevVal = table[pos1].getValue();
+            table[pos1] = new Bucket<K, V>(key, value);
+            key = prevKey;
+            value = prevVal;
+
+            int pos2 = hash2(key);
+            if (table[pos2] == null) {
+                table[pos2] = new Bucket<K, V>(key, value);
+                return;
+            }
+            // Swapping out buckets
+            prevKey = table[pos2].getBucKey();
+            prevVal = table[pos2].getValue();
+            table[pos2] = new Bucket<K, V>(key, value);
+            key = prevKey;
+            value = prevVal;
+        }
+        // We never were able to swap within the limit so we rehash, try again
+        rehash();
+        put(key, value);
     }
 
     /**
