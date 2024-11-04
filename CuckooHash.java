@@ -251,44 +251,28 @@ public class CuckooHash<K, V> {
      */
 
     public void put(K key, V value) {
-        if (table[hash1(key)] != null &&
-                table[hash1(key)].getBucKey() == key &&
-                table[hash1(key)].getValue() == value) {
+        int pos = hash1(key);
+        if (table[pos] != null && table[pos].getValue().equals(value))
             return;
-        }
-        if (table[hash2(key)] != null &&
-                table[hash2(key)].getBucKey() == key &&
-                table[hash2(key)].getValue() == value) {
-            return;
-        }
 
         for (int i = 0; i < CAPACITY; i++) {
-            int pos1 = hash1(key);
-            // If we ever encounter a null bucket our shuffle is finished
-            if (table[pos1] == null) {
-                table[pos1] = new Bucket<K, V>(key, value);
+            if (table[pos] == null) {
+                table[pos] = new Bucket<K, V>(key, value);
                 return;
             }
-            // Swapping out buckets
-            K prevKey = table[pos1].getBucKey();
-            V prevVal = table[pos1].getValue();
-            table[pos1] = new Bucket<K, V>(key, value);
+
+            K prevKey = table[pos].getBucKey();
+            V prevVal = table[pos].getValue();
+            table[pos] = new Bucket<K, V>(key, value);
             key = prevKey;
             value = prevVal;
 
-            int pos2 = hash2(key);
-            if (table[pos2] == null) {
-                table[pos2] = new Bucket<K, V>(key, value);
-                return;
-            }
-            // Swapping out buckets
-            prevKey = table[pos2].getBucKey();
-            prevVal = table[pos2].getValue();
-            table[pos2] = new Bucket<K, V>(key, value);
-            key = prevKey;
-            value = prevVal;
+            int idx = hash1(key);
+            if (idx == pos)
+                pos = hash2(key);
+            else
+                pos = idx;
         }
-        // We never were able to swap within the limit so we rehash, try again
         rehash();
         put(key, value);
     }
